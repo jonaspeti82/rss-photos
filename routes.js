@@ -3,6 +3,7 @@
 module.exports = function(app) {
 
 	app.use('/photos/food', require('./calls/food'));
+	app.use('/photos/food/*', require('./calls/food'));
 	app.use('/api/photos', require('./calls/photos'));
 	app.use('/delay', require('./calls/delay'));
 	
