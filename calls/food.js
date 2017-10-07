@@ -37,10 +37,10 @@ async function getLast10Photos(req, res) {
 				photos[i].authorInfo.fullName,
 				photos[i].authorInfo.country,
 				photos[i].authorInfo.city,
-				photos[i].photoUrl,
-				photos[i].thumbnailUrl,
+				photos[i].photoUrl + '<br><br>' + photos[i].thumbnailUrl,
 				photos[i].createdAt,
-				photos[i].takenAt
+				photos[i].takenAt,
+				photos[i].tags.join(',')
 			];
 			result += '<tr><td>' + item.join('</td><td>') + '</td></tr>';
 		}
