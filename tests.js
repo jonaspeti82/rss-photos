@@ -38,8 +38,8 @@ async.waterfall([
 						
 			// delay API 5 second wait check
 			let diff = Math.floor(new Date() / 1000) - unixtime_start;
-			if ( (diff <= 5*60) || (diff >= 5*60+5)) 
-				errors.push(new Error('[HTTP GET /DELAY TEST] Waited for ' + diff + 'seconds'));
+			if (diff != 5)
+				errors.push(new Error('[HTTP GET /DELAY TEST] Waited for ' + diff + ' seconds'));
 		})
 		.on('error', function (error) {
 			errors.push(new Error('[HTTP GET /DELAY TEST] Failed to connect to the application via HTTP'));
@@ -61,6 +61,7 @@ async.waterfall([
 			else if (photos500px.length < 100)
 				errors.push('[500px API] Not found 100 photos, just ' + photos500px.length);
 			
+			console.log(JSON.stringify(photos500px[0], null, 4));
 			callback(null);
 		});
 	}
@@ -69,7 +70,6 @@ async.waterfall([
 	if (errors.length > 0) 
 		for (let i = 0; i < errors.length; i++)
 			console.log(errors[i]);
-	else
+	else 
 		console.log('OK.');
-	
 });

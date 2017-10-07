@@ -3,14 +3,14 @@
 const express = require('express');
 const async = require('async');
 const API500px = require('500px');
-const PhotoList = require('../schema/photolist');
+const Photos = require('../schema/photos');
 
 var router = express.Router();
 
 
 exports.getLatest100Photos = function (consumer_key, finally_callback) {
 	let errors = [];
-	let photos = [];
+	let photoList = [];
 	let api500px = null;
 	
 	async.waterfall([
@@ -19,13 +19,21 @@ exports.getLatest100Photos = function (consumer_key, finally_callback) {
 			try {
 				api500px = new API500px(consumer_key);
 				api500px.photos.searchByTag('food', {'sort': 'created_at', 'rpp': '100'}, function (errors500px, results) {
-					if (results)
-						photos = results;
+					if (results) {
+						for (let i = 0; i < results.photos.length; i++) {
+							let photo = new Photos({});
+							photo.createdAt = results.photos[i].created_at;
+							photo.takenAt = results.photos[i].taken_at;
+							photo.photoUrl = results.photos[i].image_url;
+							photo.thumbnailUrl = 'https://drscdn.500px.org/'+results.photos[i].url;
+							photo.authorInfo.fullName = results.photos[i].user.fullname;
+							photo.authorInfo.city = results.photos[i].user.city;
+							photo.authorInfo.country = results.photos[i].user.country;
+							photoList.push(photo);
+						}
+					}
 					if (errors500px)
 						errors = errors500px;
-					else {
-						// TODO: Parse photos for response!
-					}
 					callback(null);
 				});
 			}
@@ -37,7 +45,7 @@ exports.getLatest100Photos = function (consumer_key, finally_callback) {
 		
 	
 	], function () {
-		return finally_callback(errors, photos);
+		return finally_callback(errors, photoList);
 	});	
 }
 

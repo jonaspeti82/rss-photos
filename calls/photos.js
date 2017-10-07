@@ -1,7 +1,7 @@
 'use strict';  
 
 const express = require('express');
-const photoList = require('../schema/photolist');
+const Photos = require('../schema/photos');
 const async = require('async');
 
 var router = express.Router();
@@ -12,7 +12,7 @@ router.delete('/', deleteAllPhotos);
 
 async function getAllPhotosAsJSON(req, res) {
 	try {
-		let photos = await photoList.find({}).exec();
+		let photos = await Photos.find({}).exec();
 		return res.json(photos);
 	}
 	catch (error) {
@@ -22,7 +22,7 @@ async function getAllPhotosAsJSON(req, res) {
 
 async function deleteAllPhotos(req, res) {
 	try {
-		let photos = await photoList.remove({}).exec();
+		let photos = await Photos.remove({}).exec();
 		return res.status(200).json({ message: "Images deleted"});
 	}
 	catch (error) {
