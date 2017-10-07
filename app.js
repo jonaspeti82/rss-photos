@@ -50,7 +50,7 @@ app.use(bodyParser.json());
 
 // sheduled tasks
 downloadAndSavePhotos();
-var j = schedule.scheduleJob('* * * * *', function () { downloadAndSavePhotos(); });
+var j = schedule.scheduleJob('* */1 * * *', function () { downloadAndSavePhotos(); });
 
 // routes
 require('./routes')(app);
