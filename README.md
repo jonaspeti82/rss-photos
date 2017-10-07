@@ -1,0 +1,1 @@
+# rss-photos test application
