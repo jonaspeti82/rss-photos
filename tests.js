@@ -61,10 +61,11 @@ async.waterfall([
 			else if (photos500px.length < 100)
 				errors.push('[500px API] Not found 100 photos, just ' + photos500px.length);
 			
-			console.log(JSON.stringify(photos500px[0], null, 4));
 			callback(null);
 		});
-	}
+	},
+
+	
 
 ], function () {
 	if (errors.length > 0) 

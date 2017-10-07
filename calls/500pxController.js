@@ -52,11 +52,11 @@ exports.getLatest100Photos = function (consumer_key, finally_callback) {
 exports.savePhotosToDB = async function (photos) {
 	let errors = [];
 	try {
-		for (let photo in photos) {
-			
-			
-			//await photo.save();
+		for (let i = 0; i < photos.length; i++) {
+			console.log('Saving: ' + i + '.photo');
+			await photos[i].save();
 		}
+		console.log('Saved all photos!');
 	}
 	catch (error) {
 		errors.push(error);

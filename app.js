@@ -5,9 +5,26 @@ const express = require('express');
 const http = require('http');
 const bodyParser  = require('body-parser');
 const schedule = require('node-schedule');
+const controller500px = require('./calls/500pxController');
 
 var app = express();
 
+function downloadAndSavePhotos() {
+	controller500px.getLatest100Photos('p0Czx7dTzziSPbsXkd7TVenHNjTaJXEqpCck2LA3', function (errors, photos) {
+		if (errors && (errors.length > 0)) {
+			console.log('Error occured while tried to update photos:');
+			console.log(errors);
+		}
+		else if (!photos || (photos.length < 100))
+			console.log('Not found 100 photos this time.');
+		else {
+			(async () => {
+				console.log('Saving photos...');
+				await controller500px.savePhotosToDB(photos);
+			})();
+		}
+	});
+}
 
 // MongoDB connection initialization
 mongoose.Promise = global.Promise;
@@ -32,9 +49,8 @@ app.use(bodyParser.json());
 
 
 // sheduled tasks
-var j = schedule.scheduleJob('0 0 * * *', function(){
-  console.log('doing the hourly job');
-});
+downloadAndSavePhotos();
+var j = schedule.scheduleJob('* * * * *', function () { downloadAndSavePhotos(); });
 
 // routes
 require('./routes')(app);
