@@ -6,12 +6,10 @@ var router = express.Router();
 
 router.get('/', wait5Seconds);
 
-async function wait5Seconds(req, res) {
+function wait5Seconds(req, res) {
 	setTimeout( function () {
 		return res.send('Hello world!');
 	}, 5000);
-	return res.send('Hello world!');
-	
 };
 
 module.exports = router;

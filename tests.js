@@ -5,9 +5,20 @@ const http = require('http');
 const bodyParser  = require('body-parser');
 const async = require('async');
 const controller500px = require('./calls/500pxController');
+const Photos = require('./schema/photos');
 
 
 let errors = [];
+
+mongoose.Promise = global.Promise;
+mongoose.connection.on('connected', function () {
+	console.log('MongoDB connected');
+});
+mongoose.connection.on('error', function (error) {
+	console.error('MongoDB connection error: ' + error);
+});
+mongoose.connect('mongodb://localhost/rss-photos', { useMongoClient: true });
+
 
 async.waterfall([
 
@@ -29,7 +40,7 @@ async.waterfall([
 			res.on('end', () => {
 				if (response != 'Hello world!')
 					errors.push(new Error('[HTTP GET /delay TEST] Invalid response: ' + response));
-				callback(null);
+				return callback(null);
 			});			
 			  
 			// status code check
@@ -43,7 +54,7 @@ async.waterfall([
 		})
 		.on('error', function (error) {
 			errors.push(new Error('[HTTP GET /delay TEST] Failed to connect to the application via HTTP'));
-			callback(null);
+			return callback(null);
 		});
 	},
 	
@@ -61,14 +72,16 @@ async.waterfall([
 			else if (photos500px.length < 100)
 				errors.push('[500px API] Not found 100 photos, just ' + photos500px.length);
 
+			
 			if (0 == errors.length) {
 				(async () => {
 					await controller500px.savePhotosToDB(photos500px);
-					callback(null);
+					return callback(null);
 				})();				
 			}
 			else
-				callback(null);
+				return callback(null);
+			
 		});
 	},
 	
@@ -90,15 +103,22 @@ async.waterfall([
 				try {
 					let json_response = JSON.parse(response);
 					
-					// TODO: query from database to check result count!
 					if (json_response.length < 1)
 						errors.push(new Error('[HTTP GET /api/photos TEST] 0 results in JSON array'));
+					
+					Photos.count({}, function (err, cnt) {
+						if (err)
+							errors.push(new Error('[HTTP GET /api/photos TEST] Failed to query the database for count of stored photos'));
+						else if (cnt != json_response.length)
+							errors.push(new Error('[HTTP GET /api/photos TEST] Different count in DB and the API response (' + cnt + ' != ' +  json_response.length  + ')'));
+						return callback(null);
+					});
 				}
 				catch (err) {
 					errors.push(err);
 					errors.push(new Error('[HTTP GET /api/photos TEST] Response is not valid JSON'));
+					return callback(null);
 				}
-				callback(null);
 			});			
 			  
 			// status code check
@@ -107,7 +127,7 @@ async.waterfall([
 		})
 		.on('error', function (error) {
 			errors.push(new Error('[HTTP GET /api/photos TEST] Failed to connect to the application via HTTP'));
-			callback(null);
+			return callback(null);
 		});
 	},
 	
@@ -130,12 +150,21 @@ async.waterfall([
 					let json_response = JSON.parse(response);
 					if (!json_response.message || ("Images deleted" !== json_response.message))
 						errors.push(new Error('[HTTP DELETE /api/photos TEST] Invalid response (' + response + ')'));
+					
+					Photos.count({}, function (err, cnt) {
+						if (err)
+							errors.push(new Error('[HTTP DELETE /api/photos TEST] Failed to query the database for count of stored photos'));
+						else if (cnt != 0)
+							errors.push(new Error('[HTTP DELETE /api/photos TEST] Different count in DB and the API response (' + cnt + ' != 0)'));
+						return callback(null);
+					});
+					
 				}
 				catch (err) {
 					errors.push(err);
 					errors.push(new Error('[HTTP DELETE /api/photos TEST] Response is not valid JSON'));
+					return callback(null);
 				}
-				callback(null);
 			});			
 			  
 			// status code check
@@ -144,16 +173,21 @@ async.waterfall([
 		})
 		.on('error', function (error) {
 			errors.push(new Error('[HTTP DELETE /api/photos TEST] Failed to connect to the application via HTTP'));
-			callback(null);
+			return callback(null);
 		});
 	},
 	
 	
 
 ], function () {
-	if (errors.length > 0) 
+	if (errors.length > 0) {
 		for (let i = 0; i < errors.length; i++)
 			console.log(errors[i]);
-	else 
+		process.exit(1);
+	}
+	else { 
 		console.log('OK.');
+		process.exit(0);
+	}
+	
 });

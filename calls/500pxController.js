@@ -34,12 +34,12 @@ exports.getLatest100Photos = function (consumer_key, finally_callback) {
 					}
 					if (errors500px)
 						errors = errors500px;
-					callback(null);
+					return callback(null);
 				});
 			}
 			catch (error) {
 				errors.push(error);
-				callback(null);
+				return callback(null);
 			}
 		},
 		
@@ -52,11 +52,11 @@ exports.getLatest100Photos = function (consumer_key, finally_callback) {
 exports.savePhotosToDB = async function (photos) {
 	let errors = [];
 	try {
-		for (let i = 0; i < photos.length; i++) 
+		for (let i = 0; i < photos.length; i++)
 			await photos[i].save();
-		console.log('Photos saved.');
 	}
 	catch (error) {
+		console.log('savePhotosToDB error');
 		errors.push(error);
 	}
 	return errors;

@@ -21,6 +21,7 @@ function downloadAndSavePhotos() {
 			(async () => {
 				console.log('Saving photos...');
 				await controller500px.savePhotosToDB(photos);
+				console.log('Photos saved!');
 			})();
 		}
 	});
